@@ -13,7 +13,8 @@ Google Drive:
 ```
 
 ```
-Baidu YunPan:
+Baidu YunPan: https://pan.baidu.com/s/1rEO-G-T19Xh9ENni2s6_Zw  密码: 9ir3
+
 ```
 
 ## Instruction
