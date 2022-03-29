@@ -1,16 +1,20 @@
-### Hi there 👋
+# CVPR 2022: Large-scale Video Panoptic Segmentation in the Wild: A Benchmark
 
-<!--
-**VIPSeg-Dataset/VIPSeg-Dataset** is a ✨ _special_ ✨ repository because its `README.md` (this file) appears on your GitHub profile.
+## VIPSeg DataSet: A large-scale VIdeo Panoptic Segmentation dataset. 
 
-Here are some ideas to get you started:
+*The download links of VIPSeg*
 
-- 🔭 I’m currently working on ...
-- 🌱 I’m currently learning ...
-- 👯 I’m looking to collaborate on ...
-- 🤔 I’m looking for help with ...
-- 💬 Ask me about ...
-- 📫 How to reach me: ...
-- 😄 Pronouns: ...
-- ⚡ Fun fact: ...
--->
+```
+Google Drive:
+```
+
+```
+Baidu YunPan:
+```
+
+## Instruction
+
+The dataset is organized as following:
+
+
+
