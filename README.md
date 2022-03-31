@@ -9,7 +9,7 @@
 *The download links of VIPSeg*
 
 ```
-Google Drive:
+Google Drive: https://drive.google.com/file/d/1gGJrJrw-hGvhciyUoApL-UXIj08tjfn-/view?usp=sharing
 ```
 
 ```
