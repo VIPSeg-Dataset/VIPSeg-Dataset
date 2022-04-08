@@ -72,6 +72,14 @@ sh run_eval.sh
   year={2022}
 
 }
+
+@inproceedings{miao2021vspw,
+  title={Vspw: A large-scale dataset for video scene parsing in the wild},
+  author={Miao, Jiaxu and Wei, Yunchao and Wu, Yu and Liang, Chen and Li, Guangrui and Yang, Yi},
+  booktitle={Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition},
+  pages={4133--4143},
+  year={2021}
+}
 ```
 
 
