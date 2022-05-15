@@ -48,7 +48,7 @@ The COCO format dataset is organized as following:
 
 ## Baseline
 
-This implementation is based on PanopticFCN[https://github.com/dvlab-research/PanopticFCN]. Please refer to PanopticFCN[https://github.com/dvlab-research/PanopticFCN] for installation instructions.
+This implementation is based on PanopticFCN([https://github.com/dvlab-research/PanopticFCN]). Please refer to PanopticFCN([https://github.com/dvlab-research/PanopticFCN]) for installation instructions.
 
 ```
 cd ClipPanoFCN
