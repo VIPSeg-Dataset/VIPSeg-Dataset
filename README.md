@@ -8,13 +8,14 @@
 
 *The download links of VIPSeg*
 
+(20220621) We refined the annotations and further improved the quality of VIPSeg-Dataset.
+
 ```
-Google Drive: https://drive.google.com/file/d/1gGJrJrw-hGvhciyUoApL-UXIj08tjfn-/view?usp=sharing
+Google Drive: [https://drive.google.com/file/d/1gGJrJrw-hGvhciyUoApL-UXIj08tjfn-/view?usp=sharing](https://drive.google.com/file/d/1B13QUiE82xf7N6nVHclb4ErN-Zuai-sZ/view?usp=sharing)
 ```
 
 ```
-Baidu YunPan: 链接: https://pan.baidu.com/s/14eDJNHTx8twIngmaXyohog  密码: lb6v
-
+Baidu YunPan: 链接：https://pan.baidu.com/s/18l05aTnsQCaiHYndSc8SaA 提取码：qllb 
 ```
 
 ## Instruction
