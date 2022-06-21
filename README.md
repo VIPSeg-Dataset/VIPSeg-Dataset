@@ -11,7 +11,7 @@
 (20220621) We refined the annotations and further improved the quality of VIPSeg-Dataset.
 
 ```
-Google Drive: [https://drive.google.com/file/d/1gGJrJrw-hGvhciyUoApL-UXIj08tjfn-/view?usp=sharing](https://drive.google.com/file/d/1B13QUiE82xf7N6nVHclb4ErN-Zuai-sZ/view?usp=sharing)
+Google Drive: https://drive.google.com/file/d/1B13QUiE82xf7N6nVHclb4ErN-Zuai-sZ/view?usp=sharing
 ```
 
 ```
