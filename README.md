@@ -31,6 +31,8 @@ The dataset is organized as following:
 ### Change VIPSeg to 720P and COCO Format
 
 ```
+pip install git+https://github.com/cocodataset/panopticapi.git
+
 python change2_720p.py
 
 python create_panoptic_video_labels.py
