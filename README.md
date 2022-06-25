@@ -87,6 +87,9 @@ sh run_eval.sh
 }
 ```
 
+## License
+
+The data is released for non-commercial research purpose only.
 
 
 
