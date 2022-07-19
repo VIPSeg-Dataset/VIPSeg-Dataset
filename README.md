@@ -51,7 +51,9 @@ The COCO format dataset is organized as following:
 
 ## Baseline
 
-This implementation is based on [PanopticFCN](https://github.com/dvlab-research/PanopticFCN). Please refer to [PanopticFCN](https://github.com/dvlab-research/PanopticFCN) for installation instructions.
+This implementation is based on [PanopticFCN](https://github.com/dvlab-research/PanopticFCN). Please refer to [PanopticFCN](https://github.com/dvlab-research/PanopticFCN) for installation instructions. 
+
+Download [pretrained weight](https://drive.google.com/file/d/1_VkJIhbQg9uqN49L3cDAW66zZKJE0fkI/view?usp=sharing) and put it in ClipPanoFCN.
 
 ```
 cd ClipPanoFCN
