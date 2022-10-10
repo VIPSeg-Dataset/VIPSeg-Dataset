@@ -30,6 +30,8 @@ The dataset is organized as following:
 
 ### Change VIPSeg to 720P and COCO Format
 
+NOTE: The files "change2_720p.py,create_panoptic_video_labels.py,splitjson.py" are togethor with the dataset. Please download the dataset and unzip it.
+
 ```
 pip install git+https://github.com/cocodataset/panopticapi.git
 
@@ -40,6 +42,7 @@ python create_panoptic_video_labels.py
 python splitjson.py
 
 ```
+
 
 The COCO format dataset is organized as following:
 
