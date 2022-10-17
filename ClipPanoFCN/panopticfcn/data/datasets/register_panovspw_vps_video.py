@@ -182,19 +182,19 @@ def get_metadata(json_file):
 
 _PREDEFINED_SPLITS_PANOVSPW = {
     "panoVSPW_vps_video_train": (
-        "panoVSPW_gts/panoVSPW_720p/images",
-        "panoVSPW_gts/panoVSPW_720p/panomasksRGB",
-        "panoVSPW_gts/panoVSPW_720p/panoptic_gt_vspw_train.json",
+        "VIPSeg/VIPSeg_720P/images",
+        "VIPSeg/VIPSeg_720P/panomasksRGB",
+        "VIPSeg/VIPSeg_720P/panoptic_gt_VIPSeg_train.json",
     ),
     "panoVSPW_vps_video_val": (
-        "panoVSPW_gts/panoVSPW_720p/images",
-        "panoVSPW_gts/panoVSPW_720p/panomasksRGB",
-        "panoVSPW_gts/panoVSPW_720p/panoptic_gt_vspw_val.json",
+        "VIPSeg/VIPSeg_720P/images",
+        "VIPSeg/VIPSeg_720P/panomasksRGB",
+        "VIPSeg/VIPSeg_720P/panoptic_gt_VIPSeg_val.json",
     ),
     "panoVSPW_vps_video_test": (
-        "panoVSPW_gts/panoVSPW_720p/images",
-        "panoVSPW_gts/panoVSPW_720p/panomasksRGB",
-        "panoVSPW_gts/panoVSPW_720p/panoptic_gt_vspw_test.json",
+        "VIPSeg/VIPSeg_720P/images",
+        "VIPSeg/VIPSeg_720P/panomasksRGB",
+        "VIPSeg/VIPSeg_720P/panoptic_gt_VIPSeg_test.json",
     ),
     }
 
