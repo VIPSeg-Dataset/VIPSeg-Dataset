@@ -67,7 +67,7 @@ sh run_eval.sh
 
 ```
 
-The model weight for inference can be downloaded [here](https://drive.google.com/file/d/1dLJyrWDrpqtsMn5ELAqY-nJqoj46TF35/view?usp=sharing).
+The model weight for inference can be downloaded [here](https://drive.google.com/file/d/1dLJyrWDrpqtsMn5ELAqY-nJqoj46TF35/view?usp=sharing). Put it in ./output
 
 
 ## Citation
