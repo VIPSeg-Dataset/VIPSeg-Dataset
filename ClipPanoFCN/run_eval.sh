@@ -1,7 +1,7 @@
 export DETECTRON2_DATASETS='/your/path/to/VIPSeg_720P'
 
 GPU_NUM=4
-DATAROOT=$DETECTRON2_DATASETS'/panoVSPW_gts/panoVSPW_720p/panomasksRGB'
+DATAROOT=$DETECTRON2_DATASETS'/VIPSeg/VIPSeg_720P/panomasksRGB'
 PRETRAIN_WEIGHT='./panoptic_fcn_star_r50_3x.pth'
 
 BATCHSIZE=8
@@ -12,7 +12,7 @@ CONFIG='configs/video_vpsw_PanopticFCN-R50-3x.yaml'
 VAL_CLIPNUM=$CLIPNUM
 IMGSAVEROOT='imgsave_f2'
 SPLIT='val'
-GT_JSONFILE=$DETECTRON2_DATASETS'/panoVSPW_gts/panoVSPW_720p/panoptic_gt_vspw_'$SPLIT'.json'
+GT_JSONFILE=$DETECTRON2_DATASETS'/VIPSeg/VIPSeg_720P/panoptic_gt_VIPSeg_'$SPLIT'.json'
 
 python eval_net_video.py --num-gpus 1 \
  --config-file $CONFIG  --pretrain_weight $PRETRAIN_WEIGHT --train_clipnum $VAL_CLIPNUM  --img_per_batch $BATCHSIZE --imgsaveroot $IMGSAVEROOT --split $SPLIT
