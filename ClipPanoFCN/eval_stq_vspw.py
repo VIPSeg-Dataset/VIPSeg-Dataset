@@ -167,8 +167,8 @@ def main():
             for el in pred_json['segments_info']:
                 id_ = el['id']
                 cate_id = el['category_id']
-                prediction_semantic[pan_gt==id_] = cate_id
-                prediction_instance[pan_gt==id_] = pred_id_to_ins_num_dic[id_]
+                prediction_semantic[pan_pred==id_] = cate_id
+                prediction_instance[pan_pred==id_] = pred_id_to_ins_num_dic[id_]
             prediction = ((prediction_semantic << bit_shit) + prediction_instance)  
 
             stq_metric.update_state(ground_truth.astype(dtype=np.int32),
