@@ -1,0 +1,5 @@
+.idea
+.vscode
+**.swp
+**.pyc
+**__pycache__

@@ -14,30 +14,31 @@ from PIL import Image
 import multiprocessing
 import time
 import json
+from tqdm import tqdm
 from collections import defaultdict
 import copy
 import pdb
 import segmentation_and_tracking_quality as numpy_stq
 
 
-
-
 def parse_args():
     parser = argparse.ArgumentParser(description='VPSNet eval')
-    parser.add_argument('--submit_dir', type=str,
-        help='test outout directory', default='work_dirs/cityscapes_vps/fusetrack_vpct/val_pans_unified/') 
-    parser.add_argument('--truth_dir', type=str, 
-        help='ground truth directory', default='data/cityscapes_vps/val/panoptic_video')
-    parser.add_argument('--pan_gt_json_file', type=str, 
-        help='ground truth directory', default='data/cityscapes_vps/panpotic_gt_val_city_vps.json')    
+    parser.add_argument('--submit_dir', '-i', type=str,
+                        help='test output directory')
+
+    parser.add_argument('--truth_dir', type=str,
+                        help='ground truth directory. Point this to <BASE_DIR>/VIPSeg/VIPSeg_720P/panomasksRGB '
+                             'after running the conversion script')
+
+    parser.add_argument('--pan_gt_json_file', type=str,
+                        help='ground truth JSON file. Point this to <BASE_DIR>/VIPSeg/VIPSeg_720P/panoptic_gt_'
+                             'VIPSeg_val.json after running the conversion script')
+
     args = parser.parse_args()
     return args
 
 
 def main():
-
-
-
     n_classes = 124
     ignore_label = 255
     bit_shit = 16
@@ -71,27 +72,6 @@ def main():
     stq_metric = numpy_stq.STQuality(n_classes, thing_list_, ignore_label,
                                      bit_shit, 2**24)
 
-    categories = {el['id']: el for el in categories}
-    # ==> pred_json, gt_json, categories
-
-    start_time = time.time()
-    #gt_pans = []
-    #files = [item['file_name'].replace('_newImg8bit.png','_final_mask.png').replace('_leftImg8bit.png','_gtFine_color.png') for item in gt_jsons['images']]
-    #files.sort()
-    #for idx, file in enumerate(files):
-    #    image = np.array(Image.open(os.path.join(truth_dir, file)))
-    #    gt_pans.append(image)
-    #print('==> gt_pans:', len(gt_pans), '//', time.time() - start_time,'sec')
-
-    #start_time = time.time()
-    #pred_pans = []
-    #files = [item['id']+'.png' for item in gt_jsons['images']]
-    #for idx, file in enumerate(files):
-    #    image = np.array(Image.open(os.path.join(submit_dir, 'pan_pred', file)))
-    #    pred_pans.append(image)
-    #print('==> pred_pans:', len(pred_pans), '//', time.time() - start_time,'sec')
-    #assert len(gt_pans) == len(pred_pans), "number of prediction does not match with the groud truth."
-
     pred_annos = pred_jsons['annotations']
     pred_j={}
     for p_a in pred_annos:
@@ -104,10 +84,12 @@ def main():
 
     gt_pred_split = []
 
-    for seq_id, video_images in enumerate(gt_jsons['videos']):
-    
+    pbar = tqdm(gt_jsons['videos'])
+    for seq_id, video_images in enumerate(pbar):
         video_id = video_images['video_id']
-        print('processing video:{}'.format(video_id))
+        pbar.set_description(video_id)
+
+        # print('processing video:{}'.format(video_id))
         gt_image_jsons = video_images['images']
         gt_js = gt_j[video_id]
         pred_js = pred_j[video_id]
@@ -132,7 +114,6 @@ def main():
                     list_tmp.append(id_tmp_)
         for ii, id_tmp_ in enumerate(list_tmp):
             gt_id_to_ins_num_dic[id_tmp_]=ii
-
             
         pred_id_to_ins_num_dic={}
         list_tmp = []
@@ -159,7 +140,6 @@ def main():
                 ground_truth_instance[pan_gt==id_] = gt_id_to_ins_num_dic[id_]
 
             ground_truth = ((ground_truth_semantic << bit_shit) + ground_truth_instance)
-
 
             prediction_instance = np.ones_like(pan_pred)*255
             prediction_semantic = np.ones_like(pan_pred)*255

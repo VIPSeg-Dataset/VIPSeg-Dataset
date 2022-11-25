@@ -4,6 +4,8 @@
 # VPQ evaluation code by tube (video segment) matching
 # Inference on every frames and evaluation on every 5 frames.
 # ------------------------------------------------------------------
+from tqdm import tqdm
+from functools import partial
 
 import argparse
 import sys
@@ -11,14 +13,15 @@ import os
 import os.path
 import numpy as np
 from PIL import Image
-import multiprocessing
+import multiprocessing as mp
 import time
 import json
 from collections import defaultdict
 import copy
 import pdb
 
-class PQStatCat():
+
+class PQStatCat:
     def __init__(self):
         self.iou = 0.0
         self.tp = 0
@@ -32,7 +35,8 @@ class PQStatCat():
         self.fn += pq_stat_cat.fn
         return self
 
-class PQStat():
+
+class PQStat:
     def __init__(self):
         self.pq_per_cat = defaultdict(PQStatCat)
 
@@ -70,7 +74,7 @@ class PQStat():
         return {'pq': pq / n, 'sq': sq / n, 'rq': rq / n, 'n': n}, per_class_results
 
 
-def vpq_compute_single_core(gt_pred_set, categories, nframes=2):
+def vpq_compute_single_core(categories, nframes, gt_pred_set):
     OFFSET = 256 * 256 * 256
     VOID = 0
     vpq_stat = PQStat()
@@ -84,6 +88,9 @@ def vpq_compute_single_core(gt_pred_set, categories, nframes=2):
         # Collect tube IoU, TP, FP, FN
         for i, (gt_json, pred_json, gt_pan, pred_pan, gt_image_json) in enumerate(gt_pred_set[idx:idx+nframes]):
             #### Step1. Collect frame-level pan_gt, pan_pred, etc.
+            gt_pan = np.array(Image.open(gt_pan))
+            pred_pan = np.array(Image.open(pred_pan))
+
             gt_pan, pred_pan = np.uint32(gt_pan), np.uint32(pred_pan)
             pan_gt = gt_pan[:, :, 0] + gt_pan[:, :, 1] * 256 + gt_pan[:, :, 2] * 256 * 256
             pan_pred = pred_pan[:, :, 0] + pred_pan[:, :, 1] * 256 + pred_pan[:, :, 2] * 256 * 256
@@ -212,9 +219,50 @@ def vpq_compute_single_core(gt_pred_set, categories, nframes=2):
 def vpq_compute(gt_pred_split, categories, nframes, output_dir):
     start_time = time.time()
     vpq_stat = PQStat()
-    for idx, gt_pred_set in enumerate(gt_pred_split):
-        tmp = vpq_compute_single_core(gt_pred_set, categories, nframes=nframes)
+    for idx, gt_pred_set in enumerate(tqdm(gt_pred_split)):
+        tmp = vpq_compute_single_core(gt_pred_set=gt_pred_set, categories=categories, nframes=nframes)
         vpq_stat += tmp
+
+    # hyperparameter: window size k
+    k = (nframes-1)*5
+    print('==> %d-frame vpq_stat:'%(k), time.time()-start_time, 'sec')
+    metrics = [("All", None), ("Things", True), ("Stuff", False)]
+    results = {}
+    for name, isthing in metrics:
+        results[name], per_class_results = vpq_stat.pq_average(categories, isthing=isthing)
+        if name == 'All':
+            results['per_class'] = per_class_results
+
+    vpq_all = 100 * results['All']['pq']
+    vpq_thing = 100 * results['Things']['pq']
+    vpq_stuff = 100 * results['Stuff']['pq']
+
+    save_name = os.path.join(output_dir, 'vpq-%d.txt'%(k))
+    f = open(save_name, 'w') if save_name else None
+    f.write("================================================\n")
+    f.write("{:10s}| {:>5s}  {:>5s}  {:>5s} {:>5s}".format("", "PQ", "SQ", "RQ", "N\n"))
+    f.write("-" * (10 + 7 * 4)+'\n')
+    for name, _isthing in metrics:
+        f.write("{:10s}| {:5.1f}  {:5.1f}  {:5.1f} {:5d}\n".format(name, 100 * results[name]['pq'], 100 * results[name]['sq'], 100 * results[name]['rq'], results[name]['n']))
+    f.write("{:4s}| {:>5s} {:>5s} {:>5s} {:>6s} {:>7s} {:>7s} {:>7s}\n".format("IDX", "PQ", "SQ", "RQ", "IoU", "TP", "FP", "FN"))
+    for idx, result in results['per_class'].items():
+        f.write("{:4d} | {:5.1f} {:5.1f} {:5.1f} {:6.1f} {:7d} {:7d} {:7d}\n".format(idx, 100 * result['pq'], 100 * result['sq'], 100 * result['rq'], result['iou'], result['tp'], result['fp'], result['fn']))
+    if save_name:
+        f.close()
+
+    return vpq_all, vpq_thing, vpq_stuff
+
+
+def vpq_compute_parallel(gt_pred_split, categories, nframes, output_dir, num_processes):
+    start_time = time.time()
+    vpq_stat = PQStat()
+
+    assert num_processes > 0
+    with mp.Pool(num_processes) as p:
+        for tmp in tqdm(p.imap(partial(vpq_compute_single_core, categories, nframes), gt_pred_split, chunksize=5),
+                        total=len(gt_pred_split)):
+            # tmp = vpq_compute_single_core(gt_pred_set, categories, nframes=nframes)
+            vpq_stat += tmp
 
     # hyperparameter: window size k
     k = (nframes-1)*5
@@ -248,18 +296,27 @@ def vpq_compute(gt_pred_split, categories, nframes, output_dir):
 
 def parse_args():
     parser = argparse.ArgumentParser(description='VPSNet eval')
-    parser.add_argument('--submit_dir', type=str,
-        help='test outout directory', default='work_dirs/cityscapes_vps/fusetrack_vpct/val_pans_unified/') 
-    parser.add_argument('--truth_dir', type=str, 
-        help='ground truth directory', default='data/cityscapes_vps/val/panoptic_video')
-    parser.add_argument('--pan_gt_json_file', type=str, 
-        help='ground truth directory', default='data/cityscapes_vps/panpotic_gt_val_city_vps.json')    
+
+    parser.add_argument('--submit_dir', '-i',
+                        type=str,
+                        help='test output directory', required=True)
+
+    parser.add_argument('--truth_dir', type=str,
+                        help='ground truth directory. Point this to <BASE_DIR>/VIPSeg/VIPSeg_720P/panomasksRGB '
+                             'after running the conversion script')
+
+    parser.add_argument('--pan_gt_json_file', type=str,
+                        default="/nodes/baltika/work2/athar/datasets/VIPSeg/VIPSeg/VIPSeg_720P/panoptic_gt_VIPSeg_val.json",
+                        help='ground truth JSON file. Point this to <BASE_DIR>/VIPSeg/VIPSeg_720P/panoptic_gt_'
+                             'VIPSeg_val.json after running the conversion script')
+
+    parser.add_argument("--num_processes", type=int, default=8)
+
     args = parser.parse_args()
     return args
 
 
 def main():
-
     args = parse_args()
     submit_dir = args.submit_dir
     truth_dir = args.truth_dir
@@ -283,22 +340,6 @@ def main():
     # ==> pred_json, gt_json, categories
 
     start_time = time.time()
-    #gt_pans = []
-    #files = [item['file_name'].replace('_newImg8bit.png','_final_mask.png').replace('_leftImg8bit.png','_gtFine_color.png') for item in gt_jsons['images']]
-    #files.sort()
-    #for idx, file in enumerate(files):
-    #    image = np.array(Image.open(os.path.join(truth_dir, file)))
-    #    gt_pans.append(image)
-    #print('==> gt_pans:', len(gt_pans), '//', time.time() - start_time,'sec')
-
-    #start_time = time.time()
-    #pred_pans = []
-    #files = [item['id']+'.png' for item in gt_jsons['images']]
-    #for idx, file in enumerate(files):
-    #    image = np.array(Image.open(os.path.join(submit_dir, 'pan_pred', file)))
-    #    pred_pans.append(image)
-    #print('==> pred_pans:', len(pred_pans), '//', time.time() - start_time,'sec')
-    #assert len(gt_pans) == len(pred_pans), "number of prediction does not match with the groud truth."
 
     pred_annos = pred_jsons['annotations']
     pred_j={}
@@ -308,11 +349,12 @@ def main():
     gt_j  ={}
     for g_a in gt_annos:
         gt_j[g_a['video_id']] = g_a['annotations']
-     
 
     gt_pred_split = []
 
-    for video_images in gt_jsons['videos']:
+    pbar = tqdm(gt_jsons['videos'])
+    for video_images in pbar:
+        pbar.set_description(video_images['video_id'])
     
         video_id = video_images['video_id']
         gt_image_jsons = video_images['images']
@@ -326,24 +368,32 @@ def main():
         pred_pans = []
         for imgname_j in gt_image_jsons:
             imgname = imgname_j['file_name']
-            image = np.array(Image.open(os.path.join(submit_dir, 'pan_pred', video_id,imgname)))
-            pred_pans.append(image)
-            image = np.array(Image.open(os.path.join(truth_dir, video_id,imgname)))
-            gt_pans.append(image)
+
+            pred_pans.append(os.path.join(submit_dir, 'pan_pred', video_id, imgname))
+            gt_pans.append(os.path.join(truth_dir, video_id,imgname))
+            #
+            # image = np.array(Image.open(os.path.join(submit_dir, 'pan_pred', video_id,imgname)))
+            # pred_pans.append(image)
+            #
+            # image = np.array(Image.open(os.path.join(truth_dir, video_id,imgname)))
+            # gt_pans.append(image)
             
 
 #    gt_pred_all = list(zip(gt_jsons, pred_jsons, gt_pans, pred_pans, gt_image_jsons))
         gt_pred_split.append(list(zip(gt_js,pred_js,gt_pans,pred_pans,gt_image_jsons)))
-        print('processing video:{}'.format(video_id))
+        # print('processing video:{}'.format(video_id))
 
     start_time = time.time()
     vpq_all, vpq_thing, vpq_stuff = [], [], []
 
     # for k in [0,5,10,15] --> num_frames_w_gt [1,2,3,4]
-    for nframes in [1,2,4,6,8]:
+    for nframes in [1, 2, 4, 6, 8]:
         gt_pred_split_ = copy.deepcopy(gt_pred_split)
-        vpq_all_, vpq_thing_, vpq_stuff_ = vpq_compute(
-                gt_pred_split_, categories, nframes, output_dir)
+        # vpq_all_, vpq_thing_, vpq_stuff_ = vpq_compute(
+        #         gt_pred_split_, categories, nframes, output_dir)
+        vpq_all_, vpq_thing_, vpq_stuff_ = vpq_compute_parallel(
+                gt_pred_split_, categories, nframes, output_dir, args.num_processes)
+
         del gt_pred_split_
         print(vpq_all_, vpq_thing_, vpq_stuff_)
         vpq_all.append(vpq_all_)
