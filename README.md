@@ -3,7 +3,7 @@
 
 ![avatar](show_data.png)
 
-### We thank [Video K-Net](https://github.com/lxtGH/Video-K-Net) which provides a strong baseline for our VIPSeg dataset. This is a transformer-based model that achieves new SOTA.
+### We thank [Video K-Net](https://github.com/lxtGH/Video-K-Net) which provides a strong baseline for VIPSeg dataset. This is a transformer-based model that achieves new SOTA.
 
 ## VIPSeg DataSet: A large-scale VIdeo Panoptic Segmentation dataset. 
 
